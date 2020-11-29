@@ -1,5 +1,5 @@
 
-import { canUseWorker, baseURLBin, baseURLWasm, urlFromVersion, pathToURL, promisedMiniXhr } from '../../compiler/compiler-utils'
+import { canUseWorker, baseURLBin, urlFromVersion, pathToURL, promisedMiniXhr } from '../../compiler/compiler-utils'
 const yo = require('yo-yo')
 const helper = require('../../../lib/helper')
 const addTooltip = require('../../ui/tooltip')
@@ -22,7 +22,7 @@ class CompilerContainer {
       timeout: 300,
       allversions: null,
       selectedVersion: null,
-      defaultVersion: 'soljson-v0.7.4+commit.3f05b770.js' // this default version is defined: in makeMockCompiler (for browser test) and in package.json (downloadsolc_root) for the builtin compiler
+      defaultVersion: 'soljson-v0.7.5+commit.eb77ed08.js' // this default version is defined: in makeMockCompiler (for browser test) and in package.json (downloadsolc_root) for the builtin compiler
     }
   }
 
@@ -499,12 +499,11 @@ class CompilerContainer {
 
   // fetching both normal and wasm builds and creating a [version, baseUrl] map
   async fetchAllVersion (callback) {
-    let allVersions, selectedVersion, allVersionsWasm, isURL
+    let allVersions, selectedVersion, isURL
     // fetch normal builds
     const binRes = await promisedMiniXhr(`${baseURLBin}/list.json`)
-    // fetch wasm builds
-    const wasmRes = await promisedMiniXhr(`${baseURLWasm}/list.json`)
-    if (binRes.event.type === 'error' && wasmRes.event.type === 'error') {
+   
+    if (binRes.event.type === 'error') {
       allVersions = [{ path: 'builtin', longVersion: 'latest local version' }]
       selectedVersion = 'builtin'
       callback(allVersions, selectedVersion)
@@ -518,24 +517,12 @@ class CompilerContainer {
         const urlArr = selectedVersion.split('/')
         if (urlArr[urlArr.length - 1].startsWith('soljson')) isURL = true
       }
-      if (wasmRes.event.type !== 'error') {
-        allVersionsWasm = JSON.parse(wasmRes.json).builds.slice().reverse()
-      }
+    
     } catch (e) {
       addTooltip('Cannot load compiler version list. It might have been blocked by an advertisement blocker. Please try deactivating any of them from this page and reload. Error: ' + e)
     }
     // replace in allVersions those compiler builds which exist in allVersionsWasm with new once
-    if (allVersionsWasm && allVersions) {
-      allVersions.forEach((compiler, index) => {
-        const wasmIndex = allVersionsWasm.findIndex(wasmCompiler => { return wasmCompiler.longVersion === compiler.longVersion })
-        if (wasmIndex !== -1) {
-          allVersions[index] = allVersionsWasm[wasmIndex]
-          pathToURL[compiler.path] = baseURLWasm
-        } else {
-          pathToURL[compiler.path] = baseURLBin
-        }
-      })
-    }
+   
     callback(allVersions, selectedVersion, isURL)
   }
 

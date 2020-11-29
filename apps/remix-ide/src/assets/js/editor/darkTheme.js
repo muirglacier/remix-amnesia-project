@@ -3,7 +3,9 @@ ace.define("ace/theme/remixDark",["require","exports","module","ace/lib/dom"], f
 
   exports.isDark = true;
   exports.cssClass = "ace-remixDark";
-  exports.cssText = ".ace-remixDark .ace_gutter {\
+  exports.cssText = "\
+  .ace-remixDark { font: 16px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace !important; }\
+  .ace-remixDark .ace_gutter {\
   background: #2a2c3f;\
   color: #8789a1;\
   border-right: 1px solid #282828;\

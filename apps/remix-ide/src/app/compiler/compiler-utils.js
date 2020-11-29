@@ -1,10 +1,10 @@
 const semver = require('semver')
 const minixhr = require('minixhr')
 /* global Worker */
+var currentProtocol = window.location.protocol;
+var currentHost = window.location.host;
 
-export const baseURLBin = 'https://solc-bin.ethereum.org/bin'
-export const baseURLWasm = 'https://solc-bin.ethereum.org/wasm'
-
+export const baseURLBin = currentProtocol + '//' + currentHost + '/assets/compilers'
 export const pathToURL = {}
 
 /**
@@ -14,7 +14,7 @@ export const pathToURL = {}
 export function urlFromVersion (version) {
   if (!version.startsWith('soljson-v')) version = 'soljson-v' + version
   if (!version.endsWith('.js')) version = version + '.js'
-  return `${pathToURL[version]}/${version}`
+  return `${baseURLBin}/${version}`
 }
 
 /**

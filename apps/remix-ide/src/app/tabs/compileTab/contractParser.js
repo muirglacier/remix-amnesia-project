@@ -20,12 +20,7 @@ var getDetails = function (contractName, contract, source) {
 
   if (contract.evm.bytecode.object) {
     detail.bytecode = contract.evm.bytecode
-    detail.web3Deploy = gethDeploy(contractName.toLowerCase(), contract.abi, contract.evm.bytecode.object)
-
-    detail.metadataHash = retrieveMetadataHash(contract.evm.bytecode.object)
-    if (detail.metadataHash) {
-      detail.swarmLocation = 'bzzr://' + detail.metadataHash
-    }
+    detail.web3Deploy = gethDeploy(contractName.toLowerCase(), contract.abi, contract.evm.bytecode.object)    
   }
 
   detail.functionHashes = {}

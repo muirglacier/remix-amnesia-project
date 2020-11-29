@@ -11,6 +11,7 @@ var GistHandler = require('../../../lib/gist-handler')
 var QueryParams = require('../../../lib/query-params.js')
 
 const css = csjs`
+  
   .text {
     cursor: pointer;
     font-weight: normal;
@@ -100,7 +101,7 @@ const profile = {
   methods: [],
   events: [],
   description: ' - ',
-  icon: 'assets/img/remixLogo.webp',
+  icon: 'assets/img/icon.png',
   location: 'mainPanel',
   version: packageJson.version
 }
@@ -115,50 +116,8 @@ export class LandingPage extends ViewPlugin {
     const themeQuality = globalRegistry.get('themeModule').api.currentTheme().quality
     window.addEventListener('resize', () => this.adjustMediaPanel())
     window.addEventListener('click', (e) => this.hideMediaPanel(e))
-    this.twitterFrame = yo`
-      <div class="px-2 ${css.media}">
-        <a class="twitter-timeline"
-          data-width="350"
-          data-theme="${themeQuality}"
-          data-chrome="nofooter noheader transparent"
-          data-tweet-limit="8"
-          href="https://twitter.com/EthereumRemix"
-        >
-        </a>
-        <script src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-      </div>
-    `
-    this.badgeTwitter = yo`<button
-      class="btn-info p-2 m-1 border rounded-circle ${css.mediaBadge} fab fa-twitter"
-      id="remixIDEHomeTwitterbtn"
-      onclick=${(e) => this.showMediaPanel(e)}
-    ></button>`
-    this.badgeMedium = yo`<button
-      class="btn-danger p-2 m-1 border rounded-circle ${css.mediaBadge} fab fa-medium"
-      id="remixIDEHomeMediumbtn"
-      onclick=${(e) => this.showMediaPanel(e)}
-    ></button>`
-    this.twitterPanel = yo`
-      <div id="remixIDE_TwitterBlock" class="p-2 mx-0 mb-0 d-none ${css.remixHomeMedia}">
-        ${this.twitterFrame}
-      </div>
-    `
-    this.mediumPanel = yo`
-      <div id="remixIDE_MediumBlock" class="p-2 mx-04 mb-0 d-none ${css.remixHomeMedia}">
-        <div id="medium-widget" class="p-3 ${css.media}">
-          <div
-            id="retainable-rss-embed"
-            data-rss="https://medium.com/feed/remix-ide"
-            data-maxcols="1"
-            data-layout="grid"
-            data-poststyle="external"
-            data-readmore="More..."
-            data-buttonclass="btn mb-3"
-            data-offset="-100">
-          </div>
-        </div>
-      </div>
-    `
+    
+   
     this.adjustMediaPanel()
     globalRegistry.get('themeModule').api.events.on('themeChanged', (theme) => {
       this.onThemeChanged(theme.quality)
@@ -166,8 +125,7 @@ export class LandingPage extends ViewPlugin {
   }
 
   adjustMediaPanel () {
-    this.twitterPanel.style.maxHeight = Math.max(window.innerHeight - 150, 200) + 'px'
-    this.mediumPanel.style.maxHeight = Math.max(window.innerHeight - 150, 200) + 'px'
+    
   }
 
   hideMediaPanel (e) {
@@ -175,40 +133,16 @@ export class LandingPage extends ViewPlugin {
     const mediaPanels = document.getElementById('remixIDEMediaPanels')
     if (!mediaPanelsTitle || !mediaPanels) return
     if (!mediaPanelsTitle.contains(e.target) && !mediaPanels.contains(e.target)) {
-      this.mediumPanel.classList.remove('d-block')
-      this.mediumPanel.classList.add('d-none')
-      this.twitterPanel.classList.remove('d-block')
-      this.twitterPanel.classList.add('d-none')
+     
     }
   }
 
   onThemeChanged (themeQuality) {
-    const twitterFrame = yo`
-      <div class="px-2 ${css.media}">
-        <a class="twitter-timeline"
-          data-width="350"
-          data-theme="${themeQuality}"
-          data-chrome="nofooter noheader transparent"
-          data-tweet-limit="8"
-          href="https://twitter.com/EthereumRemix"
-        >
-        </a>
-        <script src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-      </div>
-    `
-    yo.update(this.twitterFrame, twitterFrame)
+   
   }
 
   showMediaPanel (e) {
-    if (e.target.id === 'remixIDEHomeTwitterbtn') {
-      this.mediumPanel.classList.remove('d-block')
-      this.mediumPanel.classList.add('d-none')
-      this.twitterPanel.classList.toggle('d-block')
-    } else {
-      this.twitterPanel.classList.remove('d-block')
-      this.twitterPanel.classList.add('d-none')
-      this.mediumPanel.classList.toggle('d-block')
-    }
+    
   }
 
   render () {
@@ -340,97 +274,23 @@ export class LandingPage extends ViewPlugin {
     }
     const img = yo`<img class=${css.logoImg} src="assets/img/guitarRemiCroped.webp" onclick="${() => playRemi()}"></img>`
     const playRemi = async () => { await document.getElementById('remiAudio').play() }
-    // to retrieve medium posts
-    document.body.appendChild(yo`<script src="https://www.retainable.io/assets/retainable/rss-embed/retainable-rss-embed.js"></script>`)
+    
     const container = yo`
       <div class="${css.homeContainer} d-flex" data-id="landingPageHomeContainer">
         <div class="${css.mainContent} bg-light">
           <div class="d-flex justify-content-between">
-            <div class="d-flex flex-column">
-              <div class="border-bottom d-flex justify-content-between clearfix py-3 mb-4">
-                <div class="mx-4 w-100">
-                  ${img}
-                  <audio id="remiAudio" muted=false src="assets/audio/remiGuitar-single-power-chord-A-minor.wav"></audio>
-                </div>
-              </div>
-              <div class="row ${css.hpSections} mx-4" data-id="landingPageHpSections">
-                <div class="ml-3">
-                  <div class="plugins mb-5">
-                  <h4>Featured Plugins</h4>
-                  <div class="d-flex flex-row pt-2">
-                    ${solEnv}
-                    ${pipelineEnv}
-                    ${mythXEnv}
-                    ${sourceVerifyEnv}
-                    ${debuggerEnv}
-                    ${moreEnv}
-                  </div>
-                </div>
-                  <div class="d-flex">
-                    <div class="file">
-                      <h4>File</h4>
-                      <p class="mb-1">
-                        <i class="mr-1 far fa-file"></i>
-                        <span class="ml-1 mb-1 ${css.text}" onclick=${() => createNewFile()}>New File</span>
-                      </p>
-                      <p class="mb-1">
-                        <i class="mr-1 far fa-file-alt"></i>
-                        <label class="ml-1 ${css.labelIt} ${css.bigLabelSize} ${css.text}">
-                          Open Files
-                          <input title="open file" type="file" onchange="${
-                            (event) => {
-                              event.stopPropagation()
-                              const fileExplorer = globalRegistry.get('fileexplorer/browser').api
-                              fileExplorer.uploadFile(event)
-                            }
-                          }" multiple />
-                        </label>
-                      </p>
-                      <p class="mb-1">
-                        <i class="far fa-hdd"></i>
-                        <span class="ml-1 ${css.text}" onclick=${() => connectToLocalhost()}>Connect to Localhost</span>
-                      </p>
-                      <p class="mt-3 mb-0"><label>IMPORT FROM:</label></p>
-                      <div class="btn-group">
-                        <button class="btn mr-1 btn-secondary" data-id="landingPageImportFromGistButton" onclick="${() => importFromGist()}">Gist</button>
-                        <button class="btn mx-1 btn-secondary" onclick="${() => load('Github', 'github URL', ['https://github.com/0xcert/ethereum-erc721/src/contracts/tokens/nf-token-metadata.sol', 'https://github.com/OpenZeppelin/openzeppelin-solidity/blob/67bca857eedf99bf44a4b6a0fc5b5ed553135316/contracts/access/Roles.sol', 'github:OpenZeppelin/openzeppelin-solidity/contracts/ownership/Ownable.sol#v2.1.2'])}">GitHub</button>
-                        <button class="btn mx-1 btn-secondary" onclick="${() => load('Swarm', 'bzz-raw URL', ['bzz-raw://<swarm-hash>'])}">Swarm</button>
-                        <button class="btn mx-1 btn-secondary" onclick="${() => load('Ipfs', 'ipfs URL', ['ipfs://<ipfs-hash>'])}">Ipfs</button>
-                        <button class="btn mx-1 btn-secondary" onclick="${() => load('Https', 'http/https raw content', ['https://raw.githubusercontent.com/OpenZeppelin/openzeppelin-solidity/master/contracts/crowdsale/validation/IndividuallyCappedCrowdsale.sol'])}">https</button>
-                        <button class="btn mx-1 btn-secondary  text-nowrap" onclick="${() => load('@resolver-engine', 'resolver-engine URL', ['github:OpenZeppelin/openzeppelin-solidity/contracts/ownership/Ownable.sol#v2.1.2'], yo`<span>please checkout <a class='text-primary' href="https://github.com/Crypto-Punkers/resolver-engine" target='_blank'>https://github.com/Crypto-Punkers/resolver-engine</a> for more information</span>`)}">Resolver-engine</button>
-                      </div><!-- end of btn-group -->
-                    </div><!-- end of div.file -->
-                    <div class="ml-4 pl-4">
-                      <h4>Resources</h4>
-                      <p class="mb-1">
-                        <i class="mr-1 fas fa-book"></i>
-                        <a class="${css.text}" target="__blank" href="https://remix-ide.readthedocs.io/en/latest/#">Documentation</a>
-                      </p>
-                      <p class="mb-1">
-                        <i class="mr-1 fab fa-gitter"></i>
-                        <a class="${css.text}" target="__blank" href="https://gitter.im/ethereum/remix">Gitter channel</a>
-                        </p>
-                      <p class="mb-1">
-                        <i class="mr-1 fab fa-medium"></i>
-                        <a class="${css.text}" target="__blank" href="https://medium.com/remix-ide">Medium Posts</a>
-                      </p>
-                      <p>
-                        <i class="fab fa-ethereum"></i>
-                        <span class="ml-2 ${css.text}" onclick=${() => switchToPreviousVersion()}>Old experience</span>
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div><!-- end of hpSections -->
+            <div class="d-flex flex-column" style="width: 100%; text-align: center; padding-top: 200px">
+              <img src="assets/img/icon.png" style="width: 200px; display: block;
+              margin-left: auto;
+              margin-right: auto; filter: invert(1);">
+              <h1 style="text-align: center; padding-top: 20px">Don't Worry, Mark is None The Wiser!</h1>              
             </div>
             <div class="d-flex flex-column ${css.rightPanel}">
               <div class="d-flex pr-2 py-2 align-self-end"  id="remixIDEMediaPanelsTitle">
-                ${this.badgeTwitter}
-                ${this.badgeMedium}
+         
               </div>
               <div class="mr-3 d-flex bg-light ${css.panels}" id="remixIDEMediaPanels">
-                ${this.mediumPanel}
-                ${this.twitterPanel}
+    
               </div>
             </div>
           </div>

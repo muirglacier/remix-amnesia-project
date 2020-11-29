@@ -297,14 +297,6 @@ class CompileTab extends ViewPlugin {
         ${selectEl}
       </div>
       <article class="mt-2 pb-0">
-        <button id="publishOnSwarm" class="btn btn-secondary btn-block" title="Publish on Swarm" onclick="${() => { publishToStorage('swarm', this.fileProvider, this.fileManager, this.data.contractsDetails[this.selectedContract]) }}">
-          <span>Publish on Swarm</span>
-          <img id="swarmLogo" class="${css.storageLogo} ml-2" src="assets/img/swarm.webp">
-        </button>
-        <button id="publishOnIpfs" class="btn btn-secondary btn-block" title="Publish on Ipfs" onclick="${() => { publishToStorage('ipfs', this.fileProvider, this.fileManager, this.data.contractsDetails[this.selectedContract]) }}">
-        <span>Publish on Ipfs</span>
-        <img id="ipfsLogo" class="${css.storageLogo} ml-2" src="assets/img/ipfs.webp">
-      </button>
         <button data-id="compilation-details" class="btn btn-secondary btn-block" title="Display Contract Details" onclick="${() => { this.details() }}">
           Compilation Details
         </button>

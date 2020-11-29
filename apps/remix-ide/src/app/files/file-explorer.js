@@ -1,7 +1,6 @@
 /* global FileReader */
 /* global fetch */
 const async = require('async')
-const Gists = require('gists')
 const modalDialogCustom = require('../ui/modal-dialog-custom')
 const tooltip = require('../ui/tooltip')
 const QueryParams = require('../../lib/query-params')
@@ -30,23 +29,15 @@ function fileExplorer (localRegistry, files, menuItems, plugin) {
       {
         action: 'createNewFile',
         title: 'Create New File',
-        icon: 'fas fa-plus-circle'
+        icon: 'fas fa-plus'
       },
-      {
-        action: 'publishToGist',
-        title: 'Publish all [browser] explorer files to a github gist',
-        icon: 'fab fa-github'
-      },
+      
       {
         action: 'uploadFile',
         title: 'Add Local file to the Browser Storage Explorer',
-        icon: 'far fa-folder-open'
-      },
-      {
-        action: 'updateGist',
-        title: 'Update the current [gist] explorer',
-        icon: 'fab fa-github'
+        icon: 'fas fa-folder-open'
       }
+      
     ]
   // menu items
   this.menuItems = allItems.filter(
@@ -252,17 +243,7 @@ function fileExplorer (localRegistry, files, menuItems, plugin) {
             }
           }, () => {})
       }
-      if (folderPath === 'browser/gists') {
-        actions['Push changes to gist'] = () => {
-          const id = key.substr(key.lastIndexOf('/') + 1, key.length - 1)
-          modalDialogCustom.confirm(
-            'Push back to Gist',
-            'Are you sure you want to push all your changes back to Gist?',
-            () => { self.toGist(id) },
-            () => {}
-          )
-        }
-      }
+ 
     }
     MENU_HANDLE = contextMenu(event, actions)
   })
@@ -273,6 +254,7 @@ function fileExplorer (localRegistry, files, menuItems, plugin) {
     const actions = {}
     const provider = self._deps.fileManager.fileProviderOf(key)
     if (!provider.isExternalFolder(key)) {
+      actions['Create File'] = () => self.createNewFile(self._deps.fileManager.extractPathOf(key))
       actions['Create Folder'] = () => self.createNewFolder(self._deps.fileManager.extractPathOf(key))
       actions.Rename = () => {
         if (self.files.isReadOnly(key)) { return tooltip('cannot rename file. ' + self.files.type + ' is a read only explorer') }
@@ -428,13 +410,6 @@ fileExplorer.prototype.init = function () {
   return this.container
 }
 
-fileExplorer.prototype.publishToGist = function () {
-  modalDialogCustom.confirm(
-    'Create a public gist',
-    'Are you sure you want to publish all your files in browser directory anonymously as a public gist on github.com? Note: this will not include directories.',
-    () => { this.toGist() }
-  )
-}
 
 fileExplorer.prototype.uploadFile = function (event) {
   // TODO The file explorer is merely a view on the current state of
@@ -474,101 +449,6 @@ fileExplorer.prototype.uploadFile = function (event) {
   })
 }
 
-fileExplorer.prototype.toGist = function (id) {
-  const proccedResult = function (error, data) {
-    if (error) {
-      modalDialogCustom.alert('Failed to manage gist: ' + error)
-      console.log('Failed to manage gist: ' + error)
-    } else {
-      if (data.html_url) {
-        modalDialogCustom.confirm('Gist is ready', `The gist is at ${data.html_url}. Would you like to open it in a new window?`, () => {
-          window.open(data.html_url, '_blank')
-        })
-      } else {
-        modalDialogCustom.alert(data.message + ' ' + data.documentation_url + ' ' + JSON.stringify(data.errors, null, '\t'))
-      }
-    }
-  }
-
-  /**
-   * This function is to get the original content of given gist
-   * @params id is the gist id to fetch
-   */
-  async function getOriginalFiles (id) {
-    if (!id) {
-      return []
-    }
-
-    const url = `https://api.github.com/gists/${id}`
-    const res = await fetch(url)
-    const data = await res.json()
-    return data.files || []
-  }
-
-  // If 'id' is not defined, it is not a gist update but a creation so we have to take the files from the browser explorer.
-  const folder = id ? 'browser/gists/' + id : 'browser/'
-  this.packageFiles(this.files, folder, (error, packaged) => {
-    if (error) {
-      console.log(error)
-      modalDialogCustom.alert('Failed to create gist: ' + error.message)
-    } else {
-      // check for token
-      var tokenAccess = this._deps.config.get('settings/gist-access-token')
-      if (!tokenAccess) {
-        modalDialogCustom.alert(
-          'Remix requires an access token (which includes gists creation permission). Please go to the settings tab to create one.'
-        )
-      } else {
-        const description = 'Created using remix-ide: Realtime Ethereum Contract Compiler and Runtime. \n Load this file by pasting this gists URL or ID at https://remix.ethereum.org/#version=' +
-          queryParams.get().version + '&optimize=' + queryParams.get().optimize + '&runs=' + queryParams.get().runs + '&gist='
-        const gists = new Gists({ token: tokenAccess })
-
-        if (id) {
-          const originalFileList = getOriginalFiles(id)
-          // Telling the GIST API to remove files
-          const updatedFileList = Object.keys(packaged)
-          const allItems = Object.keys(originalFileList)
-            .filter(fileName => updatedFileList.indexOf(fileName) === -1)
-            .reduce((acc, deleteFileName) => ({
-              ...acc,
-              [deleteFileName]: null
-            }), originalFileList)
-          // adding new files
-          updatedFileList.forEach((file) => {
-            const _items = file.split('/')
-            const _fileName = _items[_items.length - 1]
-            allItems[_fileName] = packaged[file]
-          })
-
-          tooltip('Saving gist (' + id + ') ...')
-          gists.edit({
-            description: description,
-            public: true,
-            files: allItems,
-            id: id
-          }, (error, result) => {
-            proccedResult(error, result)
-            if (!error) {
-              for (const key in allItems) {
-                if (allItems[key] === null) delete allItems[key]
-              }
-            }
-          })
-        } else {
-          // id is not existing, need to create a new gist
-          tooltip('Creating a new gist ...')
-          gists.create({
-            description: description,
-            public: true,
-            files: packaged
-          }, (error, result) => {
-            proccedResult(error, result)
-          })
-        }
-      }
-    }
-  })
-}
 
 // return all the files, except the temporary/readonly ones..
 fileExplorer.prototype.packageFiles = function (filesProvider, directory, callback) {

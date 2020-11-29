@@ -27,8 +27,6 @@ class CmdInterpreterAPI {
       offsetToLineColumnConverter: self._components.registry.get('offsettolinecolumnconverter').api
     }
     self.commandHelp = {
-      'remix.loadgist(id)': 'Load a gist in the file explorer.',
-      'remix.loadurl(url)': 'Load the given url in the file explorer. The url can be of type github, swarm, ipfs or raw http',
       'remix.execute(filepath)': 'Run the script specified by file path. If filepath is empty, script currently displayed in the editor is executed.',
       'remix.exeCurrent()': 'Run the script currently displayed in the editor',
       'remix.help()': 'Display this help message'
@@ -36,50 +34,7 @@ class CmdInterpreterAPI {
   }
 
   log () { arguments[0] != null ? this._components.terminal.commands.html(arguments[0]) : this._components.terminal.commands.html(arguments[1]) }
-  loadgist (id, cb) {
-    const self = this
-    self._components.gistHandler.loadFromGist({ gist: id }, this._deps.fileManager)
-    if (cb) cb()
-  }
-
-  loadurl (url, cb) {
-    const self = this
-    self._components.fileImport.import(url,
-      (loadingMsg) => { toolTip(loadingMsg) },
-      (err, content, cleanUrl, type, url) => {
-        if (err) {
-          toolTip(`Unable to load ${url}: ${err}`)
-          if (cb) cb(err)
-        } else {
-          self._deps.fileManager.writeFile(type + '/' + cleanUrl, content)
-          try {
-            content = JSON.parse(content)
-            async.eachOfSeries(content.sources, (value, file, callbackSource) => {
-              var url = value.urls[0] // @TODO retrieve all other contents ?
-              self._components.fileImport.import(url,
-                (loadingMsg) => { toolTip(loadingMsg) },
-                async (error, content, cleanUrl, type, url) => {
-                  if (error) {
-                    toolTip(`Cannot retrieve the content of ${url}: ${error}`)
-                    return callbackSource(`Cannot retrieve the content of ${url}: ${error}`)
-                  } else {
-                    try {
-                      await self._deps.fileManager.writeFile(type + '/' + cleanUrl, content)
-                      callbackSource()
-                    } catch (e) {
-                      callbackSource(e.message)
-                    }
-                  }
-                })
-            }, (error) => {
-              if (cb) cb(error)
-            })
-          } catch (e) {}
-          if (cb) cb()
-        }
-      })
-  }
-
+  
   exeCurrent (cb) {
     return this.execute(undefined, cb)
   }

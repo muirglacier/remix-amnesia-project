@@ -36,7 +36,7 @@ const profile = {
   description: ' - ',
   kind: 'fileexplorer',
   location: 'sidePanel',
-  documentation: 'https://remix-ide.readthedocs.io/en/latest/file_explorer.html',
+  documentation: 'http://about:blank',
   version: packageJson.version
 }
 
@@ -56,7 +56,7 @@ module.exports = class Filepanel extends ViewPlugin {
       return new FileExplorer(self._components.registry, self._deps.fileProviders[key], menuItems, self)
     }
 
-    var fileExplorer = createProvider('browser', ['createNewFile', 'publishToGist', canUpload ? 'uploadFile' : ''])
+    var fileExplorer = createProvider('browser', ['createNewFile', '', canUpload ? '' : ''])
     var fileSystemExplorer = createProvider('localhost')
 
     self.remixdHandle = new RemixdHandle(fileSystemExplorer, self._deps.fileProviders.localhost, appManager)

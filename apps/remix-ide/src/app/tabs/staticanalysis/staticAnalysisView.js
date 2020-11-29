@@ -88,7 +88,9 @@ staticAnalysisView.prototype.render = function () {
   if (!this.view) {
     this.view = view
   }
-  this.correctRunBtnDisabled()
+  if (this.view) {
+    this.correctRunBtnDisabled()
+  }
   return view
 }
 
